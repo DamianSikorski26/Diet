@@ -215,7 +215,7 @@ optionsMenu.addEventListener("click",async function(e){
 
             }
         })
-        
+
         // on rajoute l'aliment à la liste des aliments
 
         Aliments.push(new Aliment(
@@ -248,18 +248,16 @@ myTable.addEventListener("input",(element) =>{
     element.preventDefault();
     if (element.target.classList.contains("quantityInput")){
         let id = element.target.dataset.id;
-
         let value = Number(element.target.value);
-        
         console.log(id);
+
         Aliments[id].serving = Number(element.target.value);
         console.log(tableData);
         tableData[id].carbs = convert(Number(Aliments[id].carbs),value).toFixed(2);
         tableData[id].fats = convert(Number(Aliments[id].fats),value).toFixed(2);
         tableData[id].proteins = convert(Number(Aliments[id].proteins),value).toFixed(2);
         tableData[id].calorie = convert(Number(Aliments[id].calories),value).toFixed(2);
-
-        
+  
     }
     
 })
