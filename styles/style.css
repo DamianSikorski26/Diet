@@ -1,9 +1,15 @@
+
+
+
+
 body{
     font-family: "DM Sans", sans-serif;
+    background-color: #dfdfdf;
 }
 #Title{
     text-align: center;
     margin: 20px 0;
+    font-size: 30px;
 }
 button{
     font-family: "DM Sans", sans-serif;
@@ -33,13 +39,18 @@ button{
     width: 260px;
     margin: 40px auto;
     text-align: center;
-    height: 40px;
+    height: 50px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 
     input{
-        border: 1px solid lightblue;
+        border: 1px solid rgb(211, 211, 211);
+        padding: 10px;
+        border-radius: 20px;
+    }
+    button{
+        border-radius: 20px;
     }
 
     
@@ -49,6 +60,7 @@ button{
     width: 60px;
     border: none;
     transition: .3s all linear;
+    border-radius: 20px;
 }
 .searchButton:hover{
     background-color: black;
@@ -59,43 +71,68 @@ button{
     width: 70%;
     margin:20px auto;
     display: flex;
-    
+    width: 70%;
+    transition: .3s all linear;
+    min-width: 673px;
     gap: 20px;
     justify-content: space-between;
     align-items: stretch;
     max-height: 250px;
-    
-    
-    
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    box-shadow: 5px 5px 5px lightgray;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
 
+}
+
+.placeHolderText{
+    position: absolute;
+    translate: -50% -50%;
+    top :50%;
+    left:50%;
+    transition: .3s all linear;
+    font-size: 23px;
+    animation: MakeSearch 1s 1 forwards;
+}
+.invisible{
+    visibility: hidden;
 }
 
 .imgContainer{
     width: 50%;
-    padding: 10px;
-    
-    
+    border-radius: 10px;
+    overflow: hidden;
+    transition: .3 s all linear;
     
 }
 .imgContainer img{
         
-        
+        box-shadow: 5px 5px 5px rgb(90, 90, 90);
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center;
+        translate :0 30px;
+        opacity: 0;
+        border-radius: 10px;
+        transition: .3s all linear;
+        animation: fadeIn 1s 1 .5s forwards;
+        
         
         
 }
+.imgContainer img:hover{
+            scale: 1.05;
+        }
 
 .optionsMenu{
     width: 50%;
     gap: 100px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     gap: 15px;
-    
+    transition: .3s all linear;
     
     
 }
@@ -105,13 +142,30 @@ button{
     justify-content: space-between;
     align-items:center;
     gap: 20px;
+    transition: .3s all linear;
+    animation: fadeIn 1s 1 forwards;
     
+}
+.optionName{
+    transition: .3s all linear;
+    
+}
+
+.optionContainer:hover .optionName{
+    translate: 20px 0px;
+
+}
+
+.addButton{
+    padding: 10px;
 }
 
 #myTable{
     width: 70%;
     margin:20px auto;
     min-width: 673px;
+    border-radius: 10px;
+    
     
 }
 
@@ -126,6 +180,29 @@ button{
         max-width: 100%;
         
         
+    }
+}
+
+
+@keyframes fadeIn {
+    0%{
+        translate :0 30px;
+        opacity: 0;
+    }
+    100%{
+         translate :0 0px;
+         opacity: 1;
+    }
+}
+
+@keyframes MakeSearch {
+    0%{
+        
+        opacity: 0;
+    }
+    100%{
+         
+         opacity: 1;
     }
 }
 

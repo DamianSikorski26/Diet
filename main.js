@@ -12,6 +12,8 @@ let table = new Tabulator("#myTable", {
     data:tableData, //assign data to table
     // autoColumns:true,
     reactiveData:true,
+    
+    resizableRows:true,
     layout:"fitColumns", //fit columns to width of table (optional)
     columns:[ //Define Table Columns
         {title:"Name", field:"name", width:150},
@@ -21,6 +23,7 @@ let table = new Tabulator("#myTable", {
         {title:"Proteins", field:"proteins",bottomCalc:"sum",hozAlign:"center"},
         {title:"Calorie", field:"calorie",bottomCalc:"sum",hozAlign:"center"},
         {title:"Delete", field:"del",formatter:"html",hozAlign:"center"},
+        
     ],
 });
 
@@ -51,8 +54,9 @@ class Aliment {
 
 }
 
+///////////////////////////////////////////////////////
 // Fonction qui recupere les data en fonction du UserInput
-
+////////////////////////////////////////////////////////////
 
 async function getData(foodName){
     try{
@@ -71,7 +75,7 @@ async function getData(foodName){
 
 async function getImg(word){
     try{
-        let response = await fetch(`https://api.pexels.com/v1/search?query=${word}&per_page=1`,{
+        let response = await fetch(`https://api.pexels.com/v1/search?query=${word}&per_page=1&orientation=landscape&size=small`,{
             headers: {
               Authorization: apikeyImg
             }});
@@ -83,8 +87,11 @@ async function getImg(word){
     }
 };
 
-// function qui garde les première infos en local storage
 
+
+////////////////////////////////////////////////////////
+// function qui garde les première infos en local storage
+///////////////////////////////////////////////////////////
 function storeData(key,value){
 
     let content = JSON.stringify(value)
@@ -103,6 +110,8 @@ function proposeOptions(query){
     div.innerHTML = `<span class="optionName">${query.description}</span>
     <Button class="addButton searchButton" data-id=${query.fdcId} data-name=${query.description}>ADD</Button>`;
     optionsMenu.append(div);
+
+    
 }
 
 
@@ -110,7 +119,7 @@ function proposeOptions(query){
 
 
 
-// function qui convertit les proportions pour qu'elles fassent 100 grammes
+// function qui convertit les proportions en directe
 
 function convert(numberToConvert,newServingSize){
     return (numberToConvert / 100) * newServingSize; 
@@ -141,13 +150,42 @@ function fillTableData(){
         
     }
    
+// function qui stocke les donnée
+
+function getSavedData(){
+    if(!localStorage.getItem('saved')){
+        console.log(true)
+        return
+    }
+    let dataJson = JSON.parse(localStorage.getItem('saved'));
+    dataJson.forEach((e)=>{
+        Aliments.push(e);
+    })
+    fillTableData();
+
+    tableData.forEach((e,i)=>{
+        e.carbs = convert(Number(Aliments[i].carbs),Aliments[i].serving).toFixed(2);
+        e.fats = convert(Number(Aliments[i].fats),Aliments[i].serving).toFixed(2);
+        e.proteins = convert(Number(Aliments[i].proteins),Aliments[i].serving).toFixed(2);
+        e.calorie = convert(Number(Aliments[i].calories),Aliments[i].serving).toFixed(2);
+    })
+    
+
+}
+
+
+function saveData(){
+    let content= JSON.stringify(Aliments);
+    localStorage.setItem("saved",content);
+   
+}
 
 
 
 
-
+////////////////////////////////////////////
 // button qui active la research de la Data
-
+////////////////////////////////////////////
 button.addEventListener("click", async function (e){
     e.preventDefault();
     //cas ou l'input est vide
@@ -156,6 +194,7 @@ button.addEventListener("click", async function (e){
         return;
     }
     //creer des propositions à ajouter aux tableaux
+    document.querySelector(".placeHolderText").classList.add("invisible");
     let data = await getData(userInput.value);
     
     optionsMenu.innerHTML = "";
@@ -163,24 +202,39 @@ button.addEventListener("click", async function (e){
     
     if(data.length == 0){
         
-        optionsMenu.textContent = "Nothing Found ! Try something else.";
+        document.querySelector(".placeHolderText").innerHTML = "Nothing Found ! Try something else.";
+        document.querySelector(".placeHolderText").classList.remove("invisible");
         return
     }
-    imgContainer.innerHTML = `<img src=${await getImg(userInput.value)} alt=img>`
+    let imgData = await getImg(userInput.value);
+    setTimeout(()=>{
+        imgContainer.innerHTML = `<img src=${imgData} alt=img>`;
+    },500);
+    
+    
 
     console.log(data);
     localStorage.clear();
-    data.forEach((element) => {
-        proposeOptions(element);
-        //on stocke les propositions dans le local storage
-        storeData(element.fdcId,element)
-    })
+    data.forEach((element,index) => {
+        setTimeout(()=>{
+            proposeOptions(element);
+            //on stocke les propositions dans le local storage
+            storeData(element.fdcId,element);
+        },300*(index+1))
+           
+        });
+       
+    
     userInput.value='';
 
     
 })
 
+
+
+
 // button pour ajouter un aliment à la liste
+
 
 optionsMenu.addEventListener("click",async function(e){
     e.preventDefault();
@@ -194,7 +248,7 @@ optionsMenu.addEventListener("click",async function(e){
         let carbs;
         let fats;
         let calories;
-
+        //je recherche dans l'array les élément qui nous intéressent.
          obj.foodNutrients.forEach((element) => {
              switch(element.nutrientName){
                         case "Protein":
@@ -223,13 +277,15 @@ optionsMenu.addEventListener("click",async function(e){
             calories
         
         ))
-
+        //on remplit la tableData
         fillTableData();
-        optionsMenu.innerHTML = "";
-        imgContainer.innerHTML = "";
+        
+        saveData()
     }
 
 })
+
+// button qui enleve le l'aliment de la liste
 
 myTable.addEventListener("click",(element) =>{
     element.preventDefault();
@@ -238,9 +294,11 @@ myTable.addEventListener("click",(element) =>{
         // Aliments[id].isDeleted = true;
         Aliments.splice(id,1)
         fillTableData();
+        saveData()
     }
 })
 
+//bouton qui regle la quantité de nourriture
 
 myTable.addEventListener("input",(element) =>{
     element.preventDefault();
@@ -255,10 +313,12 @@ myTable.addEventListener("input",(element) =>{
         tableData[id].fats = convert(Number(Aliments[id].fats),value).toFixed(2);
         tableData[id].proteins = convert(Number(Aliments[id].proteins),value).toFixed(2);
         tableData[id].calorie = convert(Number(Aliments[id].calories),value).toFixed(2);
-  
+        saveData()
     }
     
 })
+
+getSavedData();
 
 
 
