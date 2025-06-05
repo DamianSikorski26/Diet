@@ -24,17 +24,11 @@ let table = new Tabulator("#myTable", {
     ],
 });
 
-
-
-
-
-
-
-
-let button = document.querySelector(".searchButton");
+let button = document.getElementById("search");
 let userInput = document.getElementById("userInput");
 let optionsMenu = document.querySelector(".optionsMenu");
 let myTable = document.getElementById("myTable");
+let imgContainer = document.querySelector(".imgContainer")
 let apiKey = "m9eIaDT8ngVFTNk3zHGegsG9E2G6Kt7RVENv8hhi";
 let apikeyImg = "22Zs5kQ7BFsAdyuSOqk6sPrkdxxCi5Z3d2HChvAwBqVMRE3Vp6e5tgk1";
 
@@ -107,7 +101,7 @@ function proposeOptions(query){
     let div = document.createElement("div");
     div.classList.add("optionContainer");
     div.innerHTML = `<span class="optionName">${query.description}</span>
-    <Button class="addButton" data-id=${query.fdcId} data-name=${query.description}>ADD</Button>`;
+    <Button class="addButton searchButton" data-id=${query.fdcId} data-name=${query.description}>ADD</Button>`;
     optionsMenu.append(div);
 }
 
@@ -168,12 +162,14 @@ button.addEventListener("click", async function (e){
     let data = await getData(userInput.value);
     
     optionsMenu.innerHTML = "";
-
+    imgContainer.innerHTML = "";
+    
     if(data.length == 0){
         
         optionsMenu.textContent = "Nothing Found ! Try something else.";
         return
     }
+    imgContainer.innerHTML = `<img src=${await getImg(userInput.value)} alt=img>`
 
     console.log(data);
     localStorage.clear();
@@ -232,8 +228,6 @@ optionsMenu.addEventListener("click",async function(e){
 
         fillTableData();
         optionsMenu.innerHTML = "";
-
-
     }
 
 })
@@ -242,14 +236,8 @@ myTable.addEventListener("click",(element) =>{
     element.preventDefault();
     if (element.target.classList.contains("delButton")){
         let id = element.target.dataset.id;
-        console.log("delButton id" + id);
-        
-
         Aliments[id].isDeleted = true;
         fillTableData();
-
-        
-   
     }
 })
 
