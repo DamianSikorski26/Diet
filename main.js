@@ -226,6 +226,7 @@ button.addEventListener("click", async function (e){
        
     
     userInput.value='';
+    saveData()
 
     
 })
