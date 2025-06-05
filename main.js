@@ -124,11 +124,11 @@ function convert(numberToConvert,newServingSize){
 function fillTableData(){
     
     tableData.splice(0, tableData.length);
-    Aliments.forEach((element,index) => {
-        if(element.isDeleted){
-            console.log("deleted");
-        }
-        else{
+    let filtered = Aliments.filter((e)=>{
+         return e.isDeleted == false;
+    })
+    filtered.forEach((element,index) => {
+        
             tableData.push(
             {
                 name : element.name,
@@ -140,11 +140,11 @@ function fillTableData(){
                 del : `<span class=delButton data-id=${index}>❌</span>`
             }
         )
-        }
+        })
         
-    })
+    }
    
-}
+
 
 
 
@@ -178,6 +178,7 @@ button.addEventListener("click", async function (e){
         //on stocke les propositions dans le local storage
         storeData(element.fdcId,element)
     })
+    userInput.value='';
 
     
 })
@@ -228,6 +229,7 @@ optionsMenu.addEventListener("click",async function(e){
 
         fillTableData();
         optionsMenu.innerHTML = "";
+        imgContainer.innerHTML = "";
     }
 
 })
@@ -246,18 +248,20 @@ myTable.addEventListener("input",(element) =>{
     element.preventDefault();
     if (element.target.classList.contains("quantityInput")){
         let id = element.target.dataset.id;
+
         let value = Number(element.target.value);
         
-
+        console.log(id);
         Aliments[id].serving = Number(element.target.value);
-
+        console.log(tableData);
         tableData[id].carbs = convert(Number(Aliments[id].carbs),value).toFixed(2);
         tableData[id].fats = convert(Number(Aliments[id].fats),value).toFixed(2);
         tableData[id].proteins = convert(Number(Aliments[id].proteins),value).toFixed(2);
-        tableData[id].calories = convert(Number(Aliments[id].calories),value).toFixed(2);
+        tableData[id].calorie = convert(Number(Aliments[id].calories),value).toFixed(2);
 
         
     }
+    
 })
 
 

@@ -56,33 +56,41 @@ button{
 }
 
 .optionsMenuContainer{
-    max-width: 70%;
+    width: 70%;
     margin:20px auto;
     display: flex;
-    flex-direction: row;
+    
     gap: 20px;
-    justify-content: center;
-    
-    
+    justify-content: space-between;
+    align-items: stretch;
     max-height: 250px;
+    
+    
+    
 
 }
 
 .imgContainer{
+    width: 50%;
+    padding: 10px;
     
-    max-height: 100%;
-    height: 250px;
-    overflow: hidden;
-    img{
-        max-width: 100%;
+    
+    
+}
+.imgContainer img{
+        
+        
+        width: 100%;
         height: 100%;
         object-fit: cover;
-    }
+        object-position: center;
+        
+        
 }
 
 .optionsMenu{
-    width:fit-content;
-    gap: 200px;
+    width: 50%;
+    gap: 100px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -95,7 +103,7 @@ button{
     
     display: flex;
     justify-content: space-between;
-    align-items:flex-start;
+    align-items:center;
     gap: 20px;
     
 }
