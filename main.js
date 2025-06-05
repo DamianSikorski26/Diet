@@ -124,10 +124,7 @@ function convert(numberToConvert,newServingSize){
 function fillTableData(){
     
     tableData.splice(0, tableData.length);
-    let filtered = Aliments.filter((e)=>{
-         return e.isDeleted == false;
-    })
-    filtered.forEach((element,index) => {
+    Aliments.forEach((element,index) => {
         
             tableData.push(
             {
@@ -238,7 +235,8 @@ myTable.addEventListener("click",(element) =>{
     element.preventDefault();
     if (element.target.classList.contains("delButton")){
         let id = element.target.dataset.id;
-        Aliments[id].isDeleted = true;
+        // Aliments[id].isDeleted = true;
+        Aliments.splice(id,1)
         fillTableData();
     }
 })
