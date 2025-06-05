@@ -52,9 +52,24 @@ button{
 }
 
 #myTable{
-    width: 60%;
+    width: 70%;
     margin: auto;
+    min-width: 673px;
     
+}
+
+
+
+
+
+.quantityInput{
+    width: 90%;
+
+    input{
+        max-width: 100%;
+        
+        
+    }
 }
 
 

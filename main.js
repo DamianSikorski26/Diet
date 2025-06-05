@@ -10,17 +10,17 @@ let tableData=[];
 let table = new Tabulator("#myTable", {
      // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
     data:tableData, //assign data to table
-    autoColumns:true,
+    // autoColumns:true,
     reactiveData:true,
     layout:"fitColumns", //fit columns to width of table (optional)
     columns:[ //Define Table Columns
         {title:"Name", field:"name", width:150},
-        {title:"Quantity", field:"quantity", hozAlign:"left", formatter:"progress"},
-        {title:"Carbs", field:"carbs",topCalc:"sum"},
-        {title:"Fats", field:"fats",topCalc:"sum"},
-        {title:"Proteins", field:"proteins",topCalc:"sum"},
-        {title:"Calorie", field:"carbs",topCalc:"sum"},
-        {title:"", field:"del"},
+        {title:"Quantity", field:"quantity", hozAlign:"center", formatter:"html"},
+        {title:"Carbs", field:"carbs",bottomCalc:"sum",hozAlign:"center"},
+        {title:"Fats", field:"fats",bottomCalc:"sum",hozAlign:"center"},
+        {title:"Proteins", field:"proteins",bottomCalc:"sum",hozAlign:"center"},
+        {title:"Calorie", field:"calorie",bottomCalc:"sum",hozAlign:"center"},
+        {title:"Delete", field:"del",formatter:"html",hozAlign:"center"},
     ],
 });
 
@@ -33,7 +33,8 @@ let table = new Tabulator("#myTable", {
 
 let button = document.querySelector(".searchButton");
 let userInput = document.getElementById("userInput");
-let optionsMenu = document.querySelector(".optionsMenu") 
+let optionsMenu = document.querySelector(".optionsMenu");
+let myTable = document.getElementById("myTable");
 let apiKey = "m9eIaDT8ngVFTNk3zHGegsG9E2G6Kt7RVENv8hhi";
 let apikeyImg = "22Zs5kQ7BFsAdyuSOqk6sPrkdxxCi5Z3d2HChvAwBqVMRE3Vp6e5tgk1";
 
@@ -44,14 +45,14 @@ const Aliments =[];
 
 //class ALiment
 class Aliment {
-    constructor(img,name,carbs,fats,proteins,calories){
-        this.img =img;
+    constructor(name,carbs,fats,proteins,calories){
         this.name = name,
-        this.quantity = 100,
         this.carbs = carbs,
         this.fats = fats,
         this.proteins = proteins,
-        this.calories = calories
+        this.calories = calories,
+        this.isDeleted = false,
+        this.serving = 100
     }
 
 }
@@ -61,8 +62,7 @@ class Aliment {
 
 async function getData(foodName){
     try{
-        let response = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}&query=${foodName}&pageSize=5
-        `);
+        let response = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}&query=${foodName}&pageSize=5&dataType=Survey (FNDDS)`);
         let data = await response.json();
         return data.foods;
     }
@@ -70,6 +70,8 @@ async function getData(foodName){
         console.log("error : "+ err);
     }
 };
+
+
 
 //fonction qui génére une image en fonction du mot choisis
 
@@ -87,8 +89,13 @@ async function getImg(word){
     }
 };
 
+// function qui garde les première infos en local storage
 
+function storeData(key,value){
 
+    let content = JSON.stringify(value)
+    localStorage.setItem(key,content)
+}
 
 
 
@@ -96,11 +103,53 @@ async function getImg(word){
 //fonction qui propose des choix
 
 function proposeOptions(query){
+    
     let div = document.createElement("div");
     div.classList.add("optionContainer");
     div.innerHTML = `<span class="optionName">${query.description}</span>
-    <Button class="addButton" data-id=${query.fdcId} >ADD</Button>`;
+    <Button class="addButton" data-id=${query.fdcId} data-name=${query.description}>ADD</Button>`;
     optionsMenu.append(div);
+}
+
+
+
+
+
+
+// function qui convertit les proportions pour qu'elles fassent 100 grammes
+
+function convert(numberToConvert,newServingSize){
+    return (numberToConvert / 100) * newServingSize; 
+
+}
+
+
+
+
+//fonction qui ajoute les donnée du tableau au tableau data
+function fillTableData(){
+    
+    tableData.splice(0, tableData.length);
+    Aliments.forEach((element,index) => {
+        if(element.isDeleted){
+            console.log("deleted");
+        }
+        else{
+            tableData.push(
+            {
+                name : element.name,
+                quantity : `<input type="number" data-id=${index} class=quantityInput value=${element.serving}>`,
+                carbs : element.carbs,
+                fats : element.fats,
+                proteins : element.proteins,
+                calorie : element.calories,
+                del : `<span class=delButton data-id=${index}>❌</span>`
+            }
+        )
+        }
+        
+    })
+   
 }
 
 
@@ -115,27 +164,117 @@ button.addEventListener("click", async function (e){
         alert("Please fill with food name !");
         return;
     }
-
+    //creer des propositions à ajouter aux tableaux
     let data = await getData(userInput.value);
+    
+    optionsMenu.innerHTML = "";
+
+    if(data.length == 0){
+        
+        optionsMenu.textContent = "Nothing Found ! Try something else.";
+        return
+    }
+
     console.log(data);
+    localStorage.clear();
     data.forEach((element) => {
         proposeOptions(element);
+        //on stocke les propositions dans le local storage
+        storeData(element.fdcId,element)
     })
+
     
 })
 
-//button pour ajouter un aliment à la liste
+// button pour ajouter un aliment à la liste
 
 optionsMenu.addEventListener("click",async function(e){
     e.preventDefault();
     if(e.target.classList.contains("addButton")){
-        Aliments.push(new Aliment())
+        let foodId = e.target.dataset.id;
+        //je recupere les infos nutritive de l'aliment dans le local storage en utilisant son data id comme clé.
+        let obj = JSON.parse(localStorage.getItem(foodId));
+        console.log(obj);
+
+        let proteine;
+        let carbs;
+        let fats;
+        let calories;
+
+         obj.foodNutrients.forEach((element) => {
+             switch(element.nutrientName){
+                        case "Protein":
+                            proteine = element.value;
+                            break
+                        case "Total lipid (fat)":
+                            fats = element.value;
+                            break
+                        case "Carbohydrate, by difference":
+                            carbs = element.value;
+                            break
+                        case "Energy":
+                            calories = element.value;
+                            break
+
+            }
+        })
+        
+        // on rajoute l'aliment à la liste des aliments
+
+        Aliments.push(new Aliment(
+            obj.description,
+            carbs,
+            fats,
+            proteine,
+            calories
+        
+        ))
+
+        fillTableData();
+        optionsMenu.innerHTML = "";
+
+
     }
-    Aliments.push(new Aliment(await getImg(userInput)))
-    tableData.push({name:"jean"});
-    console.log(tableData)
-    
+
 })
+
+myTable.addEventListener("click",(element) =>{
+    element.preventDefault();
+    if (element.target.classList.contains("delButton")){
+        let id = element.target.dataset.id;
+        console.log("delButton id" + id);
+        
+
+        Aliments[id].isDeleted = true;
+        fillTableData();
+
+        
+   
+    }
+})
+
+
+myTable.addEventListener("input",(element) =>{
+    element.preventDefault();
+    if (element.target.classList.contains("quantityInput")){
+        let id = element.target.dataset.id;
+        let value = Number(element.target.value);
+        
+
+        Aliments[id].serving = Number(element.target.value);
+
+        tableData[id].carbs = convert(Number(Aliments[id].carbs),value).toFixed(2);
+        tableData[id].fats = convert(Number(Aliments[id].fats),value).toFixed(2);
+        tableData[id].proteins = convert(Number(Aliments[id].proteins),value).toFixed(2);
+        tableData[id].calories = convert(Number(Aliments[id].calories),value).toFixed(2);
+
+        
+    }
+})
+
+
+
+
 
 
 
