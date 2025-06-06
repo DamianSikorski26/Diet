@@ -28,6 +28,7 @@
 - **HTML / CSS / JavaScript** : Frontend léger et rapide.
 - **[USDA FoodData Central API](https://fdc.nal.usda.gov/)** : Pour les données nutritionnelles des aliments.
 - **[Pexels API](https://www.pexels.com/api/)** : Pour les images des aliments.
+- **[Tabulator(Plugin-JS)](https://tabulator.info/)** : Pour l'affichage des infos dans une table.
 
 ## 📦 Installation locale
 
